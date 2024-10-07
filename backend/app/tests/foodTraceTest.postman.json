@@ -1,0 +1,301 @@
+{
+    "info": {
+      "name": "Food Trace System Tests",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "1. User Authentication",
+        "item": [
+          {
+            "name": "Admin Login",
+            "request": {
+              "method": "POST",
+              "url": "{{baseUrl}}/api/auth/login",
+              "body": {
+                "mode": "raw",
+                "raw": {
+                  "email": "admin@foodtrace.com",
+                  "pwd": "admin123"
+                }
+              }
+            }
+          },
+          {
+            "name": "Producer Login",
+            "request": {
+              "method": "POST",
+              "url": "{{baseUrl}}/api/auth/login",
+              "headers": {
+                "Content-Type": "application/json"
+              },
+              "body": {
+                "mode": "raw",
+                "raw": {
+                  "email": "producer@test.com",
+                  "pwd": "test123"
+                }
+              }
+            },
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "var jsonData = pm.response.json();",
+                    "pm.environment.set('producer_token', jsonData.access_token);"
+                  ],
+                  "type": "text/javascript"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "2. Producer Flow",
+        "item": [
+          {
+            "name": "1. Producer Login",
+            "request": {
+              "method": "POST",
+              "url": "{{baseUrl}}/api/auth/login",
+              "headers": {
+                "Content-Type": "application/json"
+              },
+              "body": {
+                "mode": "raw",
+                "raw": {
+                  "email": "producer@test.com",
+                  "pwd": "test123"
+                }
+              }
+            },
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "var jsonData = pm.response.json();",
+                    "pm.environment.set('producer_token', jsonData.access_token);"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "2. Create Product",
+            "request": {
+              "method": "POST",
+              "url": "{{baseUrl}}/api/products",
+              "headers": {
+                "Authorization": "Bearer {{producer_token}}"
+              },
+              "body": {
+                "mode": "formdata",
+                "formdata": [
+                  {
+                    "key": "name",
+                    "value": "Organic Tomatoes",
+                    "type": "text"
+                  },
+                  {
+                    "key": "description",
+                    "value": "Fresh organic tomatoes",
+                    "type": "text"
+                  },
+                  {
+                    "key": "price",
+                    "value": "9.99",
+                    "type": "text"
+                  },
+                  {
+                    "key": "category_id",
+                    "value": "1",
+                    "type": "text"
+                  },
+                  {
+                    "key": "expiry_date",
+                    "value": "2024-03-26T10:00:00Z",
+                    "type": "text"
+                  },
+                  {
+                    "key": "storage_conditions",
+                    "value": "Refrigerated 4°C",
+                    "type": "text"
+                  }
+                ]
+              }
+            },
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "var jsonData = pm.response.json();",
+                    "pm.environment.set('product_id', jsonData.id);",
+                    "pm.environment.set('temp_token', jsonData.temp_token);"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "3. Bind IoT Data (Raspberry Pi)",
+            "request": {
+              "method": "POST",
+              "url": "{{baseUrl}}/api/products/{{product_id}}/iot-data",
+              "headers": {
+                "Authorization": "Bearer {{temp_token}}",
+                "Content-Type": "application/json"
+              },
+              "body": {
+                "mode": "raw",
+                "raw": {
+                  "device_id": "RASP001",
+                  "rfid_id": "RFID001",
+                  "temperature": 4.2,
+                  "humidity": 45.2,
+                  "latitude": 31.2304,
+                  "longitude": 121.4737
+                }
+              }
+            }
+          },
+          {
+            "name": "4. Check Product Status",
+            "request": {
+              "method": "GET",
+              "url": "{{baseUrl}}/api/products/{{product_id}}",
+              "headers": {
+                "Authorization": "Bearer {{producer_token}}"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "3. Distributor Flow",
+        "item": [
+          {
+            "name": "Create Shipment",
+            "request": {
+              "method": "POST",
+              "url": "{{baseUrl}}/api/shipments",
+              "headers": {
+                "Authorization": "Bearer {{distributor_token}}"
+              },
+              "body": {
+                "mode": "raw",
+                "raw": {
+                  "retailer_id": "{{retailer_id}}",
+                  "products": [
+                    {
+                      "product_id": "{{product_id}}",
+                      "quantity": 1
+                    }
+                  ],
+                  "delivery_address": "Oxford Campus Store",
+                  "expected_delivery_time": "2024-03-20T14:00:00Z"
+                }
+              }
+            }
+          },
+          {
+            "name": "Update Shipping Status",
+            "request": {
+              "method": "PUT",
+              "url": "{{baseUrl}}/api/shipments/{{shipment_id}}/status",
+              "headers": {
+                "Authorization": "Bearer {{distributor_token}}"
+              },
+              "body": {
+                "mode": "raw",
+                "raw": {
+                  "status": "in_transit"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "4. Retailer Flow",
+        "item": [
+          {
+            "name": "Confirm Receipt",
+            "request": {
+              "method": "PUT",
+              "url": "{{baseUrl}}/api/shipments/{{shipment_id}}/confirm",
+              "headers": {
+                "Authorization": "Bearer {{retailer_token}}"
+              }
+            }
+          },
+          {
+            "name": "Update Retail Price",
+            "request": {
+              "method": "PUT",
+              "url": "{{baseUrl}}/api/products/{{product_id}}/price",
+              "headers": {
+                "Authorization": "Bearer {{retailer_token}}"
+              },
+              "body": {
+                "mode": "raw",
+                "raw": {
+                  "retail_price": 12.99
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "5. Consumer Flow",
+        "item": [
+          {
+            "name": "View Products",
+            "request": {
+              "method": "GET",
+              "url": "{{baseUrl}}/api/products/retail/{{retailer_id}}",
+              "headers": {
+                "Authorization": "Bearer {{consumer_token}}"
+              }
+            }
+          },
+          {
+            "name": "Create Order",
+            "request": {
+              "method": "POST",
+              "url": "{{baseUrl}}/api/orders",
+              "headers": {
+                "Authorization": "Bearer {{consumer_token}}"
+              },
+              "body": {
+                "mode": "raw",
+                "raw": {
+                  "retailer_id": "{{retailer_id}}",
+                  "products": [
+                    {
+                      "product_id": "{{product_id}}",
+                      "quantity": 1
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": "View Trace Info",
+            "request": {
+              "method": "GET",
+              "url": "{{baseUrl}}/api/trace/{{product_id}}",
+              "headers": {
+                "Authorization": "Bearer {{consumer_token}}"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }

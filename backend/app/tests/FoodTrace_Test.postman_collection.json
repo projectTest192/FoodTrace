@@ -1,0 +1,278 @@
+{
+  "info": {
+    "name": "Food Trace System Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. 生产商流程",
+      "item": [
+        {
+          "name": "生产商登录",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "username": "producer1",
+                "password": "test123"
+              }
+            }
+          }
+        },
+        {
+          "name": "创建产品",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/products",
+            "headers": {
+              "Authorization": "Bearer {{producer_token}}"
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "有机草莓",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "新鲜采摘的有机草莓",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "38.50",
+                  "type": "text"
+                },
+                {
+                  "key": "category_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "expiry_date",
+                  "value": "2024-04-01T00:00:00Z",
+                  "type": "text"
+                },
+                {
+                  "key": "storage_conditions",
+                  "value": "冷藏 2-8℃",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "./test_files/strawberry.jpg"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "查看生产商的产品",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/products?producer_id={{producer_id}}",
+            "headers": {
+              "Authorization": "Bearer {{producer_token}}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. 配送商流程",
+      "item": [
+        {
+          "name": "配送商登录",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "username": "distributor1",
+                "password": "test123"
+              }
+            }
+          }
+        },
+        {
+          "name": "创建配送单",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/shipments",
+            "headers": {
+              "Authorization": "Bearer {{distributor_token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "product_id": "{{product_id}}",
+                "from_address": "生产基地A",
+                "to_address": "零售店B",
+                "expected_delivery": "2024-03-20T14:00:00Z",
+                "transport_type": "冷链车",
+                "quantity": 100
+              }
+            }
+          }
+        },
+        {
+          "name": "获取实时IoT数据",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/iot/realtime/{{shipment_id}}",
+            "headers": {
+              "Authorization": "Bearer {{distributor_token}}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. 经销商流程",
+      "item": [
+        {
+          "name": "经销商登录",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "username": "retailer1",
+                "password": "test123"
+              }
+            }
+          }
+        },
+        {
+          "name": "查询可售商品",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/products?status=active",
+            "headers": {
+              "Authorization": "Bearer {{retailer_token}}"
+            }
+          }
+        },
+        {
+          "name": "更新商品价格",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/products/{{product_id}}",
+            "headers": {
+              "Authorization": "Bearer {{retailer_token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "price": 42.50
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. 消费者流程",
+      "item": [
+        {
+          "name": "消费者登录",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "username": "consumer1",
+                "password": "test123"
+              }
+            }
+          }
+        },
+        {
+          "name": "创建订单",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/orders",
+            "headers": {
+              "Authorization": "Bearer {{consumer_token}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "product_id": "{{product_id}}",
+                "quantity": 2,
+                "delivery_address": "消费者地址",
+                "contact_phone": "13800138000"
+              }
+            }
+          }
+        },
+        {
+          "name": "查询商品溯源信息",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/products/{{product_id}}/history",
+            "headers": {
+              "Authorization": "Bearer {{consumer_token}}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. IoT数据流程",
+      "item": [
+        {
+          "name": "模拟树莓派发送数据",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/products/{{product_id}}/iot-data",
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "device_id": "RASP001",
+                "temperature": 4.2,
+                "humidity": 45.2,
+                "latitude": 31.2304,
+                "longitude": 121.4737,
+                "timestamp": "{{$timestamp}}"
+              }
+            }
+          }
+        },
+        {
+          "name": "获取Redis缓存的最新数据",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/iot/latest/{{product_id}}"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.environment.set('base_url', 'http://localhost:8002');",
+          "pm.environment.set('$timestamp', new Date().toISOString());"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8002"
+    }
+  ]
+} 
