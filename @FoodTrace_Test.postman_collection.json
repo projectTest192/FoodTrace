@@ -1,0 +1,304 @@
+{
+  "info": {
+    "name": "FoodTrace_Test",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. 认证流程",
+      "item": [
+        {
+          "name": "注册生产商",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/register",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "username": "producer1",
+                "email": "producer1@example.com",
+                "password": "test123",
+                "role_id": 2
+              }
+            }
+          }
+        },
+        {
+          "name": "生产商登录",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set(\"access_token\", jsonData.access_token);",
+                  "pm.environment.set(\"producer_id\", jsonData.user.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "username": "producer1",
+                "password": "test123"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. 生产商流程",
+      "item": [
+        {
+          "name": "创建产品",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set(\"product_id\", jsonData.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/products/",
+            "header": {
+              "Authorization": "Bearer {{access_token}}"
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "organic vegetable set",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "fresh organic vegetable set",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "38.5",
+                  "type": "text"
+                },
+                {
+                  "key": "category_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "stock",
+                  "value": "100",
+                  "type": "text"
+                },
+                {
+                  "key": "unit",
+                  "value": "set",
+                  "type": "text"
+                },
+                {
+                  "key": "expiry_date",
+                  "value": "2024-04-01T00:00:00.000Z",
+                  "type": "text"
+                },
+                {
+                  "key": "storage_conditions",
+                  "value": "cold cellar 2-8℃",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "/path/to/image.jpg"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "获取生产商产品列表",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/products?producer_id={{producer_id}}",
+            "header": {
+              "Authorization": "Bearer {{access_token}}"
+            }
+          }
+        },
+        {
+          "name": "更新产品IoT数据",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/products/{{product_id}}/iot-data",
+            "header": {
+              "Authorization": "Bearer {{access_token}}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "device_id": "DEV001",
+                "rfid_id": "RFID001",
+                "temperature": 25.5,
+                "humidity": 60.0,
+                "latitude": 40.7128,
+                "longitude": -74.0060
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. 配送流程",
+      "item": [
+        {
+          "name": "创建配送单",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set(\"shipment_id\", jsonData.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/shipments/",
+            "header": {
+              "Authorization": "Bearer {{access_token}}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "product_id": "{{product_id}}",
+                "retailer_id": "{{retailer_id}}",
+                "quantity": 50,
+                "expected_delivery_date": "2024-02-15T00:00:00Z"
+              }
+            }
+          }
+        },
+        {
+          "name": "更新配送状态",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/shipments/{{shipment_id}}/status",
+            "header": {
+              "Authorization": "Bearer {{access_token}}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "status": "in_transit"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. 零售商流程",
+      "item": [
+        {
+          "name": "确认收货",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/shipments/{{shipment_id}}/confirm",
+            "header": {
+              "Authorization": "Bearer {{access_token}}",
+              "Content-Type": "application/json"
+            }
+          }
+        },
+        {
+          "name": "更新商品价格",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/products/{{product_id}}/price",
+            "header": {
+              "Authorization": "Bearer {{access_token}}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "price": 45.0
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. 消费者流程",
+      "item": [
+        {
+          "name": "查看商品列表",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/products",
+            "header": {
+              "Authorization": "Bearer {{access_token}}"
+            }
+          }
+        },
+        {
+          "name": "创建订单",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/orders/",
+            "header": {
+              "Authorization": "Bearer {{access_token}}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": {
+                "product_id": "{{product_id}}",
+                "quantity": 1
+              }
+            }
+          }
+        },
+        {
+          "name": "查询溯源信息",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/products/{{product_id}}/trace",
+            "header": {
+              "Authorization": "Bearer {{access_token}}"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8002"
+    }
+  ]
+} 

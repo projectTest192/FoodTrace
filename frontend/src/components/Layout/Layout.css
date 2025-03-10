@@ -1,0 +1,116 @@
+/* 侧边栏基础样式 */
+.ant-layout-sider {
+    background: #fff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 系统标题区域 */
+.logo-container {
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.logo-container h3 {
+    color: #1890ff;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+/* 用户信息区域 */
+.user-info {
+    margin: 16px;
+    padding: 12px;
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+
+.user-role {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.user-email {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+/* 菜单样式 */
+.ant-menu {
+    background: transparent !important;
+}
+
+.ant-menu-inline {
+    border-right: none !important;
+}
+
+.ant-menu-item {
+    height: 40px !important;
+    line-height: 40px !important;
+    margin: 4px 16px !important;
+    width: calc(100% - 32px) !important;
+    border-radius: 4px !important;
+}
+
+.ant-menu-item:hover {
+    color: #1890ff !important;
+}
+
+.ant-menu-item-selected {
+    background: #1890ff !important;
+    color: #fff !important;
+}
+
+.ant-menu-item-selected:hover {
+    background: #1890ff !important;
+    color: #fff !important;
+}
+
+.ant-menu-item .anticon {
+    margin-right: 10px;
+}
+
+/* 登出按钮 */
+.logout-button {
+    width: 100%;
+    text-align: left;
+    padding: 4px 0;
+}
+
+.logout-button:hover {
+    color: #ff4d4f !important;
+    background: none !important;
+}
+
+.layout-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.user-info-container {
+    margin-bottom: 24px;
+}
+
+.user-info-card {
+    background: #f5f5f5;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.logout-btn {
+    padding: 0;
+    height: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.logout-btn:hover {
+    color: #ff4d4f;
+    background: none;
+} 

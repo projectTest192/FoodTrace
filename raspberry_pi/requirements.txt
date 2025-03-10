@@ -1,0 +1,6 @@
+flask==2.0.1
+paho-mqtt==1.5.1
+smbus2==0.4.1
+pyserial==3.5
+pynmea2==1.18.0
+PN532==1.2.1 
